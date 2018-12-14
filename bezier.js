@@ -31,7 +31,7 @@ class Point {
 var canvas = document.getElementById('canvas');
 var drawButton = document.getElementById('drawButton');
 var ctx = canvas.getContext('2d');
-ctx.moveTo(0, 0);
+console.log(ctx);
 
 var controlPoints = []
 var iterations = 1000;
@@ -39,6 +39,7 @@ var iterations = 1000;
 canvas.addEventListener('click', function(){
   const x = event.offsetX;
   const y = event.offsetY;
+  drawPoint(x, y);
   console.log('Click on ('+x+', '+y+')')
   controlPoints.push(new Point(x, y));
 })
@@ -47,6 +48,12 @@ function drawLine(a, b) {
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+
+function drawPoint(a, b) {
+  ctx.moveTo(a.x, a.y);
+  ctx.arc(a, b, 4, 0, Math.PI*2);
   ctx.stroke();
 }
 
@@ -66,7 +73,7 @@ function deCasteljeu(controlPoints, t) {
 
 function drawCurve(controlPoints, iterations) {
   var curvePoints = []
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // ctx.clearRect(0, 0, canvas.width, canvas.height);
   for(var i = 0; i <= iterations; i++) {
     curvePoints.push(deCasteljeu(controlPoints, i/iterations));
   }
