@@ -1,31 +1,40 @@
 <html>
   <head>
       <title>Bezier Curves</title>
+      <link rel="stylesheet" type='text/css' href="styles.css">
   </head>
   <body>
-    <h1>Bezier Curves</h1>
-    
-    <table>
-      <tr>
-        <th>Nome</th>
-        <th>Login</th>
-      </tr>
-      <tr>
-        <th>Vilma</th>
-        <th>vlma</th>
-      </tr>
-      <tr>
-        <th>Pedro</th>
-        <th>pbv2</th>
-      </tr>
-    </table>
-
+    <h1>Transformação Interativa de Polígonos controlada por Curvas de Bezier</h1>
     <canvas id="canvas" width="600" height="300" style="border:1px solid #000000;">
-
     </canvas>
 
-    <button id='drawButton'>Draw Curve</button>
-    <button id='clearPoints'>Clear Control Points</button>
+    <div class='container'>
+      <button id='drawButton'>Draw Curve</button>
+      <button id='toggleControlPoints'>Toggle Pontos de Controle</button>
+      <button id='toggleControlPolygon'>Toggle Polígono de Controle</button>
+      <button id='toggleBezierCurve'>Toggle Curva de Bézier</button>
+      <button id='clearPoints'>Clear Control Points</button>
+      <p><strong>Velocidade</strong></p>
+      <input value='50' label="Velocidade" id="rangeInput" type="range">
+      <p><strong>N° de iterações</strong></p>
+      <input value='300' label="Velocidade" id="iterations" type="number">
+      <p><strong>N° Vértices do Polígono</strong></p>
+      <input value='3' label="N° de vértices do polígono" id="polygonSize" type="number">
+    </div>
     <script src='bezier.js'></script>
+    <table>
+        <tr>
+          <th>Nome</th>
+          <th>Login</th>
+        </tr>
+        <tr>
+          <th>Vilma</th>
+          <th>vlma</th>
+        </tr>
+        <tr>
+          <th>Pedro</th>
+          <th>pbv2</th>
+        </tr>
+      </table>
   </body>
 </html>
