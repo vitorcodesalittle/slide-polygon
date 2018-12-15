@@ -60,7 +60,7 @@ var ctx = canvas.getContext('2d');
 console.log('Object to draw on canvas:', ctx);
 
 var controlPoints = [];
-
+var curvePoints = []
 // Drawing on canvas:
 function drawLine(a, b) {
   ctx.beginPath();
@@ -91,12 +91,11 @@ function deCasteljeu(controlPoints, t) {
   return deCasteljeu(intermediatePoints, t);
 }
 
-function drawCurve(controlPoints, iterations) {
+function getCurvePoints(controlPoints, iterations) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   controlPoints.forEach(function( b ) {
     drawPoint(b);
   })
-  var curvePoints = []
   for(var i = 0; i <= iterations; i++) {
     curvePoints.push(deCasteljeu(controlPoints, i/iterations));
   }
@@ -105,17 +104,50 @@ function drawCurve(controlPoints, iterations) {
   }
 }
 
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if(showControlPoints) {
+    for(var i = 0; i < controlPoints.length; i++) {
+      drawPoint(controlPoints[i]);
+    }
+  }
+  if(showControlPolygon) {
+    for(var i = 0; i < controlPoints.length - 1; i++) {
+      drawLine(controlPoints[i], controlPoints[i+1]);
+    }
+  }
+  if(showBezierCurve) {
+    for(var i = 0; i < curvePoints.length; i++) {
+      drawLine(curvePoints[i], curvePoints[i+1]);
+    }
+  }
+}
+
 
 // Interface
 canvas.addEventListener('click', function(){
   const x = event.offsetX;
   const y = event.offsetY;
-  drawPoint(new Point(x, y));
+  const p = new Point(x, y);
   console.log('Click on ('+x+', '+y+')')
+  var minD = 10000;
+  for(var i = 0; i < controlPoints.length; i++) {
+    var deslocVector = controlPoints[i].sub(p);
+    var dist = deslocVector.len();
+    minD = (minD < dist)? minD: dist;
+    if(deslocVector.len() <= 5) {
+      controlPoints.splice(i, 1);
+      draw();
+      return;
+    }
+  }
+  console.log('menor distancia', minD);
   controlPoints.push(new Point(x, y));
+  draw();
 })
 drawButton.addEventListener('click', function() {
-  drawCurve(controlPoints, iterations);
+  getCurvePoints(controlPoints, iterations);
+  draw();
 })
 toggleControlPoints.addEventListener('click', function() {
   showControlPoints = 1 - showControlPoints;
