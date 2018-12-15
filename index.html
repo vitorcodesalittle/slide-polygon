@@ -6,7 +6,7 @@
   <body>
     <h1>Transformação Interativa de Polígonos controlada por Curvas de Bezier</h1>
     <p>Click on canvas to add or remove points</p>
-    <canvas id="canvas" width="600" height="300" style="border:1px solid #000000;">
+    <canvas id="canvas" width="600" height="600" style="border:1px solid #000000;">
     </canvas>
 
     <div class='container'>
@@ -21,6 +21,8 @@
       <input value='300' label="Velocidade" id="iterations" type="number">
       <p><strong>N° Vértices do Polígono</strong></p>
       <input value='3' label="N° de vértices do polígono" id="polygonSize" type="number">
+      <p><strong>Raio</strong></p>
+      <input value='40' label="Raio" id="radiusInput" type="number">
     </div>
     <script src='bezier.js'></script>
     <table>

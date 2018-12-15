@@ -1,3 +1,4 @@
+var radius = 40;
 class Point {
   constructor(x, y) {
     this.x = x; this.y = y;
@@ -26,15 +27,59 @@ class Point {
   toString() {
     return "("+String(this.x)+", "+String(this.y)+")";
   }
+
+  rotateAsVector(teta) {
+    return new Point(this.x*Math.cos(teta) - this.y*Math.sin(teta), this.x*Math.sin(teta) + this.y*Math.cos(teta));
+  }
+
+  rotateAsPoint(rotationCenter, teta) {
+    // translate to new system
+    var p = new Point(this.x - rotationCenter.x, this.y - rotationCenter.y);
+    // rotate in new system
+    p = this.rotateAsVector(teta);
+    // translate to old system
+    p = p.add(rotationCenter);
+    return p;
+  }
+}
+
+class Polygon {
+  constructor(sides, center) {
+    this.center = center;
+    this.sides = sides;
+    this.up = new Point(0, radius);
+
+    this.points = [];
+    this.points.push(this.center.add(this.up));
+    var rotation = 2*Math.PI/this.sides;
+
+    for(var i = 1; i < this.sides; i++) {
+      this.points.push(this.center.add(this.up.rotateAsVector(rotation*i)));
+    }
+  }
+
+  has(p) {
+    var foundIdx = -1;
+    for(var i = 0; i < this.sides; i++) {
+      if(this.points[i].sub(p).len() <= 5) {
+        foundIdx = i;
+        break;
+      }
+    }
+    return foundIdx;
+  }
+
+  rotate(teta) {
+    this.points = this.points.map(function( cur ) {
+      return cur.rotateAsPoint(teta);
+    });
+  }
 }
 
 /**
 O que falta fazer?
-• O sistema deve ser interativo, permitindo inserir, modificar e deletar os
-pontos de controle.
+• Modificar pontos já no canvas
 • A atualização da curva é feita em tempo real.
-• O programa deve ter botões para esconder/exibir: pontos de controle,
-poligonal de controle, curva de Bézier.
  */
 
  // elements
@@ -47,6 +92,9 @@ var clearPoints = document.getElementById('clearPoints');
 var rangeInput = document.getElementById('rangeInput');
 var polygonSizeInput = document.getElementById('polygonSize');
 var iterationsInput = document.getElementById('iterations');
+var radiusInput = document.getElementById('radiusInput');
+
+var ctx = canvas.getContext('2d');
 
 // user choices
 var velocity = 50;
@@ -55,12 +103,11 @@ var iterations = 300;
 var showControlPoints = 1;
 var showControlPolygon = 1;
 var showBezierCurve = 1;
+// var radius = 10;
 
-var ctx = canvas.getContext('2d');
-console.log('Object to draw on canvas:', ctx);
+var polygons = [];
+var curvePoints = [];
 
-var controlPoints = [];
-var curvePoints = []
 // Drawing on canvas:
 function drawLine(a, b) {
   ctx.beginPath();
@@ -91,61 +138,102 @@ function deCasteljeu(controlPoints, t) {
   return deCasteljeu(intermediatePoints, t);
 }
 
-function getCurvePoints(controlPoints, iterations) {
+function getCurvePoints(iterations) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  curvePoints = [];
-  controlPoints.forEach(function( b ) {
-    drawPoint(b);
-  })
-  for(var i = 0; i <= iterations; i++) {
-    curvePoints.push(deCasteljeu(controlPoints, i/iterations));
+  curvePoints = new Array(polygonSize);
+  controlPoints = new Array(polygonSize);
+  for(var i = 0; i < polygonSize; i++) {
+    curvePoints[i] = new Array(iterations+1);
+    controlPoints[i] = new Array(polygons.length);
+    for(var j = 0; j < polygons.length; j++) {
+      controlPoints[i][j] = polygons[j].points[i];
+    }
   }
+  for(var i = 0; i <= iterations; i++) {
+    for(var j = 0; j < polygonSize; j++) {
+      curvePoints[j][i] = deCasteljeu(controlPoints[j], i/iterations);
+    }
+  }
+  showBezierCurve = 1;
   draw();
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if(showControlPoints) {
-    for(var i = 0; i < controlPoints.length; i++) {
-      drawPoint(controlPoints[i]);
+    for(var i = 0; i < polygons.length; i++) {
+      polygons[i].points.forEach( function(cur) {
+        drawPoint(cur);
+      })
     }
   }
   if(showControlPolygon) {
-    for(var i = 0; i < controlPoints.length - 1; i++) {
-      drawLine(controlPoints[i], controlPoints[i+1]);
+    for(var i = 0; i < polygons.length - 1; i++) {
+      for(var j = 0; j < polygonSize; j++) {
+        drawLine(polygons[i].points[j], polygons[i+1].points[j])
+      }
     }
   }
   if(showBezierCurve) {
-    for(var i = 0; i < curvePoints.length-1; i++) {
-      drawLine(curvePoints[i], curvePoints[i+1]);
+    for(var i = 0; i < curvePoints.length; i++) {
+      for(var j = 0; j < curvePoints[i].length-1; j++) {
+        drawLine(curvePoints[i][j], curvePoints[i][j+1]);
+      }
     }
   }
 }
 
 
 // Interface
-canvas.addEventListener('click', function(){
+var move = 0;
+var polygonIdx;
+var pointIdx;
+
+canvas.addEventListener('mousemove', function(event) {
+  if(move) {
+    console.log(selectedPoint);
+    var newpos = new Point(event.offsetX, event.offsetY);
+    polygons[polygonIdx].points[pointIdx] = newpos;
+    draw();
+  }
+})
+canvas.addEventListener('mousedown', function(){
   const x = event.offsetX;
   const y = event.offsetY;
   const p = new Point(x, y);
-  console.log('Click on ('+x+', '+y+')')
-  var minD = 10000;
-  for(var i = 0; i < controlPoints.length; i++) {
-    var deslocVector = controlPoints[i].sub(p);
-    var dist = deslocVector.len();
-    minD = (minD < dist)? minD: dist;
-    if(deslocVector.len() <= 5) {
-      controlPoints.splice(i, 1);
-      draw();
-      return;
+  console.log('Mouse down on', p.toString());
+  selectedPoint = null;
+  console.log(polygons.length);
+  for(var i = 0; i < polygons.length; i++) {
+    pointIdx = polygons[i].has(p);
+    if(pointIdx != -1) {
+      polygonIdx = i;
+      selectedPoint = polygons[polygonIdx].points[pointIdx];
+      break;
     }
   }
-  console.log('menor distancia', minD);
-  controlPoints.push(new Point(x, y));
+  console.log('selectedPoint:',selectedPoint);
+  if(!selectedPoint) {
+    if(polygons.length > 0 && polygons[0].sides != polygonSize) {
+      console.log('Polygons must have same size');
+      return;
+    }
+    var pol = new Polygon(polygonSize, p);
+    console.log('New Polygon Points:')
+    pol.points.forEach(function(cur) {
+      console.log('point: ',cur.toString());
+    })
+    polygons.push(pol);
+  } else {
+    move = 1;
+  }
   draw();
 })
+canvas.addEventListener('mouseup', function() {
+  move = 0;
+})
 drawButton.addEventListener('click', function() {
-  getCurvePoints(controlPoints, iterations);
+  getCurvePoints(iterations);
   draw();
 })
 toggleControlPoints.addEventListener('click', function() {
@@ -164,7 +252,7 @@ toggleBezierCurve.addEventListener('click', function() {
 clearPoints.addEventListener('click', function() {
   console.log('Buttons cleared')
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  controlPoints = []
+  polygons = [];
 })
 rangeInput.addEventListener('change', function(event) {
   console.log("Velocity is now " + event.target.value);
@@ -177,4 +265,8 @@ polygonSizeInput.addEventListener('change', function(event){
 iterationsInput.addEventListener('change', function(event){
   console.log("Iterations is now " + event.target.value);
   iterations = event.target.value;
+})
+radiusInput.addEventListener('change', function() {
+  console.log('Radius is now ' + event.target.value);
+  radius = event.target.value;
 })
