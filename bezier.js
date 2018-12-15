@@ -93,6 +93,7 @@ function deCasteljeu(controlPoints, t) {
 
 function getCurvePoints(controlPoints, iterations) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  curvePoints = [];
   controlPoints.forEach(function( b ) {
     drawPoint(b);
   })
