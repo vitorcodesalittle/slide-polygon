@@ -100,9 +100,7 @@ function getCurvePoints(controlPoints, iterations) {
   for(var i = 0; i <= iterations; i++) {
     curvePoints.push(deCasteljeu(controlPoints, i/iterations));
   }
-  for(var i = 0; i < iterations; i++) {
-    drawLine(curvePoints[i], curvePoints[i+1]);
-  }
+  draw();
 }
 
 function draw() {
@@ -118,7 +116,7 @@ function draw() {
     }
   }
   if(showBezierCurve) {
-    for(var i = 0; i < curvePoints.length; i++) {
+    for(var i = 0; i < curvePoints.length-1; i++) {
       drawLine(curvePoints[i], curvePoints[i+1]);
     }
   }
