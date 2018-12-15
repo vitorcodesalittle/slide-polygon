@@ -183,6 +183,26 @@ function draw() {
   }
 }
 
+function sleepFor( sleepDuration ){
+  var now = new Date().getTime();
+  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+}
+function polygonTransformation() {
+  // considerando uma interação a cada 1000 microssegundos
+  console.log('starting polygon transformation');
+  for(var i = 0; i < iterations; i++) {
+    // polygon iter points
+    var pol = [];
+    for(var j = 0; j < polygonSize; j++) {
+      pol.push(curvePoints[j][i]);
+    }
+    for(var j = 0; j < polygonSize; j++) {
+      drawLine(pol[j], pol[(j+1)%polygonSize]);
+    }
+    
+    sleepFor(2);
+  }
+}
 
 // Interface
 var move = 0;
@@ -191,7 +211,7 @@ var pointIdx;
 
 canvas.addEventListener('mousemove', function(event) {
   if(move) {
-    console.log(selectedPoint);
+    // console.log(selectedPoint);
     var newpos = new Point(event.offsetX, event.offsetY);
     polygons[polygonIdx].points[pointIdx] = newpos;
     draw();
@@ -201,9 +221,9 @@ canvas.addEventListener('mousedown', function(){
   const x = event.offsetX;
   const y = event.offsetY;
   const p = new Point(x, y);
-  console.log('Mouse down on', p.toString());
+  // console.log('Mouse down on', p.toString());
   selectedPoint = null;
-  console.log(polygons.length);
+  // console.log(polygons.length);
   for(var i = 0; i < polygons.length; i++) {
     pointIdx = polygons[i].has(p);
     if(pointIdx != -1) {
@@ -235,6 +255,7 @@ canvas.addEventListener('mouseup', function() {
 drawButton.addEventListener('click', function() {
   getCurvePoints(iterations);
   draw();
+  polygonTransformation();
 })
 toggleControlPoints.addEventListener('click', function() {
   showControlPoints = 1 - showControlPoints;
@@ -253,6 +274,7 @@ clearPoints.addEventListener('click', function() {
   console.log('Buttons cleared')
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   polygons = [];
+  curvePoints = [];
 })
 rangeInput.addEventListener('change', function(event) {
   console.log("Velocity is now " + event.target.value);
