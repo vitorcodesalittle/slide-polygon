@@ -107,6 +107,7 @@ var showBezierCurve = 1;
 
 var polygons = [];
 var curvePoints = [];
+var polygon = [];
 
 // Drawing on canvas:
 function drawLine(a, b) {
@@ -143,6 +144,7 @@ function getCurvePoints(iterations) {
   curvePoints = new Array(polygonSize);
   controlPoints = new Array(polygonSize);
   for(var i = 0; i < polygonSize; i++) {
+    // console.log('arr len', iterations+1);
     curvePoints[i] = new Array(iterations+1);
     controlPoints[i] = new Array(polygons.length);
     for(var j = 0; j < polygons.length; j++) {
@@ -159,7 +161,7 @@ function getCurvePoints(iterations) {
 }
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // ctx.clearRect(0, 0, canvas.width, canvas.height);
   if(showControlPoints) {
     for(var i = 0; i < polygons.length; i++) {
       polygons[i].points.forEach( function(cur) {
@@ -181,26 +183,30 @@ function draw() {
       }
     }
   }
+  // console.log(polygon);
+  // console.log(polygonSize);
+  if(polygon.length > 0) {
+    for(var j = 0; j < polygonSize; j++) {
+      drawLine(polygon[j], polygon[(j+1)%polygonSize]);
+    }
+  }
 }
 
 function sleepFor( sleepDuration ){
   var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ } 
+  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
 }
 function polygonTransformation() {
   // considerando uma interação a cada 1000 microssegundos
-  console.log('starting polygon transformation');
   for(var i = 0; i < iterations; i++) {
     // polygon iter points
-    var pol = [];
+    polygon = []
     for(var j = 0; j < polygonSize; j++) {
-      pol.push(curvePoints[j][i]);
+      polygon.push(curvePoints[j][i]);
     }
-    for(var j = 0; j < polygonSize; j++) {
-      drawLine(pol[j], pol[(j+1)%polygonSize]);
-    }
+    draw();
     
-    sleepFor(2);
+    // sleepFor(300);
   }
 }
 
@@ -232,18 +238,22 @@ canvas.addEventListener('mousedown', function(){
       break;
     }
   }
-  console.log('selectedPoint:',selectedPoint);
+  // console.log('selectedPoint:',selectedPoint);
   if(!selectedPoint) {
     if(polygons.length > 0 && polygons[0].sides != polygonSize) {
       console.log('Polygons must have same size');
       return;
     }
     var pol = new Polygon(polygonSize, p);
-    console.log('New Polygon Points:')
-    pol.points.forEach(function(cur) {
-      console.log('point: ',cur.toString());
-    })
+    // console.log('New Polygon Points:')
+    // pol.points.forEach(function(cur) {
+    //   console.log('point: ',cur.toString());
+    // })
     polygons.push(pol);
+    if(polygons.length>2) {
+      getCurvePoints(iterations);
+    }
+    draw();
   } else {
     move = 1;
   }
