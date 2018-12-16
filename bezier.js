@@ -161,7 +161,7 @@ function getCurvePoints(iterations) {
 }
 
 function draw() {
-  // ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   if(showControlPoints) {
     for(var i = 0; i < polygons.length; i++) {
       polygons[i].points.forEach( function(cur) {
