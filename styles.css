@@ -1,7 +1,11 @@
 body {
-    background-color: #9e2545;
+    background-color: #282a33;
 }
 
 .container {
     vertical-align: middle;
+}
+
+.input {
+    background: #FFFFFF;
 }

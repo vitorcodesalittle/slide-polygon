@@ -110,16 +110,20 @@ var curvePoints = [];
 var polygon = [];
 
 // Drawing on canvas:
-function drawLine(a, b) {
+function drawLine(a, b, color) {
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
+  ctx.fillStyle = "#999966";
+  ctx.fill();
+  ctx.strokeStyle = color;
   ctx.stroke();
 }
 function drawPoint(b) {
   ctx.moveTo(b.x, b.y);
   ctx.beginPath();
   ctx.arc(b.x, b.y, 4, 0, Math.PI*2);
+  ctx.strokeStyle = "#99FF66";
   ctx.stroke();
 }
 
@@ -172,14 +176,14 @@ function draw() {
   if(showControlPolygon) {
     for(var i = 0; i < polygons.length - 1; i++) {
       for(var j = 0; j < polygonSize; j++) {
-        drawLine(polygons[i].points[j], polygons[i+1].points[j])
+        drawLine(polygons[i].points[j], polygons[i+1].points[j], "#00ff99")
       }
     }
   }
   if(showBezierCurve) {
     for(var i = 0; i < curvePoints.length; i++) {
       for(var j = 0; j < curvePoints[i].length-1; j++) {
-        drawLine(curvePoints[i][j], curvePoints[i][j+1]);
+        drawLine(curvePoints[i][j], curvePoints[i][j+1], "#999966");
       }
     }
   }
@@ -187,7 +191,7 @@ function draw() {
   // console.log(polygonSize);
   if(polygon.length > 0) {
     for(var j = 0; j < polygonSize; j++) {
-      drawLine(polygon[j], polygon[(j+1)%polygonSize]);
+      drawLine(polygon[j], polygon[(j+1)%polygonSize], "#00ff99");
     }
   }
 }
