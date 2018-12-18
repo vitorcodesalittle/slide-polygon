@@ -140,7 +140,6 @@ function deCasteljeu(controlPoints, t) {
 }
 
 function getCurvePoints(iterations) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
   curvePoints = new Array(polygonSize);
   controlPoints = new Array(polygonSize);
   for(var i = 0; i < polygonSize; i++) {
@@ -156,8 +155,9 @@ function getCurvePoints(iterations) {
       curvePoints[j][i] = deCasteljeu(controlPoints[j], i/iterations);
     }
   }
+  // console.log(curvePoints);
   showBezierCurve = 1;
-  draw();
+  // draw();
 }
 
 function draw() {
@@ -198,16 +198,32 @@ function sleepFor( sleepDuration ){
 }
 function polygonTransformation() {
   // considerando uma interação a cada 1000 microssegundos
-  for(var i = 0; i < iterations; i++) {
-    // polygon iter points
-    polygon = []
+  var i = 0;
+  setInterval(function() {
+    if(i > iterations) {
+      return;
+    }
+    polygon = new Array(polygonSize)
     for(var j = 0; j < polygonSize; j++) {
-      polygon.push(curvePoints[j][i]);
+      polygon[j] = curvePoints[j][i];
     }
     draw();
-    
-    // sleepFor(300);
-  }
+    i+=1;
+  }, 50);
+  // var i = 0;
+  // while(i <= iterations) {
+  //   // polygon iter points
+  //   // console.log('lol wait');
+  //   window.setTimeout(function() {
+  //     i += 1;
+  //     polygon = new Array(polygonSize)
+  //     for(var j = 0; j < polygonSize; j++) {
+  //       polygon[j] = curvePoints[j][i];
+  //     }
+  //     draw();
+  //   }, i*1000);
+  //   // console.log('waited motherfucker');
+  // }
 }
 
 // Interface
@@ -281,7 +297,7 @@ toggleBezierCurve.addEventListener('click', function() {
 })
 
 clearPoints.addEventListener('click', function() {
-  console.log('Buttons cleared')
+  console.log('points cleared')
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   polygons = [];
   curvePoints = [];
