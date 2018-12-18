@@ -91,7 +91,7 @@ var radiusInput = document.getElementById('radiusInput');
 var ctx = canvas.getContext('2d');
 
 // user choices
-var t = 50;
+var velocity = 50;
 var polygonSize = 3;
 var iterations = 300;
 var showControlPoints = 1;
@@ -102,8 +102,6 @@ var radius = 40;
 var polygons = [];
 var curvePoints = [];
 var polygon = [];
-var curvesSegments = [];
-var sumsCurveSegments = [];
 
 function drawLine(a, b) {
   ctx.beginPath();
@@ -137,43 +135,26 @@ function deCasteljeu(controlPoints, t) {
 function getCurvePoints(iterations) {
   curvePoints = new Array(polygonSize);
   controlPoints = new Array(polygonSize);
-  curvesSegments = new Array(polygonSize);
-  sumsCurveSegments = new Array(polygonSize);
 
   for(var i = 0; i < polygonSize; i++) {
-    sumsCurveSegments[i] = 0;
-    curvesSegments[i] = new Array(iterations);
-    curvePoints[i] = new Array(700); // for now number of polygons is fixed
+    curvePoints[i] = new Array();
     controlPoints[i] = new Array(polygons.length);
     for(var j = 0; j < polygons.length; j++) {
       controlPoints[i][j] = polygons[j].points[i];
     }
   }
-  var drawsInIteration = 700/iterations;
-  drawsInIteration = Math.max(drawsInIteration, 1);
+  var drawsInIteration = Math.ceil(700/iterations);
   for(var i = 0; i < iterations; i++) {
     for(var j = 0; j < polygonSize; j++) {
       var begin = deCasteljeu(controlPoints[j], i/iterations);
       var end = deCasteljeu(controlPoints[j], (i+1)/iterations);
       var seg = end.sub(begin);
       for(var k = 0; k < drawsInIteration; k++) {
-        console.log(k+i*drawsInIteration);
-        curvePoints[j][k+i*drawsInIteration] = begin.add(seg.scalar(k/drawsInIteration));
-        // console.log(curvePoints[j][k+i*drawsInIteration].toString());
-        // if(typeof(curvePoints[j][k+i*drawsInIteration]) == undefined) {
-        //   console.log(k+i*drawsInIteration, (i*drawsInIteration+k)/700);
-        // }
-        // console.log(typeof(curvePoints[j][k+i*drawsInIteration]))
-// 
+        curvePoints[j].push(begin.add(seg.scalar(k/drawsInIteration)));
       }
-
     }
-
-
   }
 
-  // console.log(curvesSegments);
-  // console.log(sumsCurveSegments);
 }
 
 function draw() {
@@ -194,7 +175,7 @@ function draw() {
   }
   if(showBezierCurve) {
     for(var i = 0; i < polygonSize; i++) {
-      for(var j = 0; j < 700; j++) {
+      for(var j = 0; curvePoints.length > 0 && j < curvePoints[0].length-1; j++) {
         drawLine(curvePoints[i][j], curvePoints[i][j+1]);
       }
     }
@@ -219,7 +200,7 @@ function polygonTransformation() {
   console.log(curvePoints.length);
   console.log(curvePoints[0].length);
   setInterval(function() {
-    if(i > 699) {
+    if(i >= curvePoints[0].length) {
       return;
     }
     polygon = new Array(polygonSize);
@@ -228,7 +209,7 @@ function polygonTransformation() {
     }
     draw();
     i+=1;
-  }, 50);
+  }, 3);
   
 }
 
@@ -300,8 +281,7 @@ clearPoints.addEventListener('click', function() {
   curvePoints = [];
 })
 rangeInput.addEventListener('change', function(event) {
-  t = event.target.value;
-  draw();
+  velocity = event.target.value;
 })
 polygonSizeInput.addEventListener('change', function(event){
   polygonSize = event.target.value;
