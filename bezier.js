@@ -1,4 +1,3 @@
-var radius = 40;
 class Point {
   constructor(x, y) {
     this.x = x; this.y = y;
@@ -71,16 +70,11 @@ class Polygon {
 
   rotate(teta) {
     this.points = this.points.map(function( cur ) {
-      return cur.rotateAsPoint(teta);
+      return cur.rotateAsPoint(this.center, teta);
     });
   }
 }
 
-/**
-O que falta fazer?
-• Modificar pontos já no canvas
-• A atualização da curva é feita em tempo real.
- */
 
  // elements
 var canvas = document.getElementById('canvas');
@@ -97,19 +91,20 @@ var radiusInput = document.getElementById('radiusInput');
 var ctx = canvas.getContext('2d');
 
 // user choices
-var velocity = 50;
+var t = 50;
 var polygonSize = 3;
 var iterations = 300;
 var showControlPoints = 1;
 var showControlPolygon = 1;
 var showBezierCurve = 1;
-// var radius = 10;
+var radius = 40;
 
 var polygons = [];
 var curvePoints = [];
 var polygon = [];
+var curvesSegments = [];
+var sumsCurveSegments = [];
 
-// Drawing on canvas:
 function drawLine(a, b) {
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
@@ -142,22 +137,43 @@ function deCasteljeu(controlPoints, t) {
 function getCurvePoints(iterations) {
   curvePoints = new Array(polygonSize);
   controlPoints = new Array(polygonSize);
+  curvesSegments = new Array(polygonSize);
+  sumsCurveSegments = new Array(polygonSize);
+
   for(var i = 0; i < polygonSize; i++) {
-    // console.log('arr len', iterations+1);
-    curvePoints[i] = new Array(iterations+1);
+    sumsCurveSegments[i] = 0;
+    curvesSegments[i] = new Array(iterations);
+    curvePoints[i] = new Array(700); // for now number of polygons is fixed
     controlPoints[i] = new Array(polygons.length);
     for(var j = 0; j < polygons.length; j++) {
       controlPoints[i][j] = polygons[j].points[i];
     }
   }
-  for(var i = 0; i <= iterations; i++) {
+  var drawsInIteration = 700/iterations;
+  drawsInIteration = Math.max(drawsInIteration, 1);
+  for(var i = 0; i < iterations; i++) {
     for(var j = 0; j < polygonSize; j++) {
-      curvePoints[j][i] = deCasteljeu(controlPoints[j], i/iterations);
+      var begin = deCasteljeu(controlPoints[j], i/iterations);
+      var end = deCasteljeu(controlPoints[j], (i+1)/iterations);
+      var seg = end.sub(begin);
+      for(var k = 0; k < drawsInIteration; k++) {
+        console.log(k+i*drawsInIteration);
+        curvePoints[j][k+i*drawsInIteration] = begin.add(seg.scalar(k/drawsInIteration));
+        // console.log(curvePoints[j][k+i*drawsInIteration].toString());
+        // if(typeof(curvePoints[j][k+i*drawsInIteration]) == undefined) {
+        //   console.log(k+i*drawsInIteration, (i*drawsInIteration+k)/700);
+        // }
+        // console.log(typeof(curvePoints[j][k+i*drawsInIteration]))
+// 
+      }
+
     }
+
+
   }
-  // console.log(curvePoints);
-  showBezierCurve = 1;
-  // draw();
+
+  // console.log(curvesSegments);
+  // console.log(sumsCurveSegments);
 }
 
 function draw() {
@@ -177,14 +193,12 @@ function draw() {
     }
   }
   if(showBezierCurve) {
-    for(var i = 0; i < curvePoints.length; i++) {
-      for(var j = 0; j < curvePoints[i].length-1; j++) {
+    for(var i = 0; i < polygonSize; i++) {
+      for(var j = 0; j < 700; j++) {
         drawLine(curvePoints[i][j], curvePoints[i][j+1]);
       }
     }
   }
-  // console.log(polygon);
-  // console.log(polygonSize);
   if(polygon.length > 0) {
     for(var j = 0; j < polygonSize; j++) {
       drawLine(polygon[j], polygon[(j+1)%polygonSize]);
@@ -192,38 +206,30 @@ function draw() {
   }
 }
 
-function sleepFor( sleepDuration ){
-  var now = new Date().getTime();
-  while(new Date().getTime() < now + sleepDuration){ /* do nothing */ }
-}
 function polygonTransformation() {
-  // considerando uma interação a cada 1000 microssegundos
+  /*
+  considere 5 segundos o tempo da transf. completa do polígono
+  para suavizar a transf. com um número arbitrário de iterações (definido pelo usuário),
+  desenhamos o polígono deslocando sobre o seg. de reta (D) entre dois pontos de uma curva, parametrizando
+  o deslocamento a partir da razão len(D)/sum(len(D[0]) + ... + len(D[iterations-1])), cujo valor é obtido em O(1) durante o desenho.
+  */
+
   var i = 0;
+  console.log(curvePoints);
+  console.log(curvePoints.length);
+  console.log(curvePoints[0].length);
   setInterval(function() {
-    if(i > iterations) {
+    if(i > 699) {
       return;
     }
-    polygon = new Array(polygonSize)
+    polygon = new Array(polygonSize);
     for(var j = 0; j < polygonSize; j++) {
       polygon[j] = curvePoints[j][i];
     }
     draw();
     i+=1;
   }, 50);
-  // var i = 0;
-  // while(i <= iterations) {
-  //   // polygon iter points
-  //   // console.log('lol wait');
-  //   window.setTimeout(function() {
-  //     i += 1;
-  //     polygon = new Array(polygonSize)
-  //     for(var j = 0; j < polygonSize; j++) {
-  //       polygon[j] = curvePoints[j][i];
-  //     }
-  //     draw();
-  //   }, i*1000);
-  //   // console.log('waited motherfucker');
-  // }
+  
 }
 
 // Interface
@@ -233,7 +239,6 @@ var pointIdx;
 
 canvas.addEventListener('mousemove', function(event) {
   if(move) {
-    // console.log(selectedPoint);
     var newpos = new Point(event.offsetX, event.offsetY);
     polygons[polygonIdx].points[pointIdx] = newpos;
     draw();
@@ -243,9 +248,7 @@ canvas.addEventListener('mousedown', function(){
   const x = event.offsetX;
   const y = event.offsetY;
   const p = new Point(x, y);
-  // console.log('Mouse down on', p.toString());
   selectedPoint = null;
-  // console.log(polygons.length);
   for(var i = 0; i < polygons.length; i++) {
     pointIdx = polygons[i].has(p);
     if(pointIdx != -1) {
@@ -254,17 +257,12 @@ canvas.addEventListener('mousedown', function(){
       break;
     }
   }
-  // console.log('selectedPoint:',selectedPoint);
   if(!selectedPoint) {
     if(polygons.length > 0 && polygons[0].sides != polygonSize) {
-      console.log('Polygons must have same size');
+      alert('Polygons must have same size');
       return;
     }
     var pol = new Polygon(polygonSize, p);
-    // console.log('New Polygon Points:')
-    // pol.points.forEach(function(cur) {
-    //   console.log('point: ',cur.toString());
-    // })
     polygons.push(pol);
     if(polygons.length>2) {
       getCurvePoints(iterations);
@@ -279,8 +277,8 @@ canvas.addEventListener('mouseup', function() {
   move = 0;
 })
 drawButton.addEventListener('click', function() {
-  getCurvePoints(iterations);
-  draw();
+  // getCurvePoints(iterations);
+  // draw();
   polygonTransformation();
 })
 toggleControlPoints.addEventListener('click', function() {
@@ -297,24 +295,20 @@ toggleBezierCurve.addEventListener('click', function() {
 })
 
 clearPoints.addEventListener('click', function() {
-  console.log('points cleared')
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   polygons = [];
   curvePoints = [];
 })
 rangeInput.addEventListener('change', function(event) {
-  console.log("Velocity is now " + event.target.value);
-  velocity = event.target.value;
+  t = event.target.value;
+  draw();
 })
 polygonSizeInput.addEventListener('change', function(event){
-  console.log("Polygon size is now " + event.target.value);
   polygonSize = event.target.value;
 })
 iterationsInput.addEventListener('change', function(event){
-  console.log("Iterations is now " + event.target.value);
   iterations = event.target.value;
 })
 radiusInput.addEventListener('change', function() {
-  console.log('Radius is now ' + event.target.value);
   radius = event.target.value;
 })
