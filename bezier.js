@@ -46,8 +46,9 @@ class Polygon {
   constructor(sides, center) {
     this.center = center;
     this.sides = sides;
-    this.up = new Point(0, radius);
-
+    console.log(orientation);
+    this.up = orientation.scalar(radius); // orientation defines the first vertex angle
+    console.log(this.up);
     this.points = [];
     this.points.push(this.center.add(this.up));
     var rotation = 2*Math.PI/this.sides;
@@ -87,6 +88,7 @@ var rangeInput = document.getElementById('rangeInput');
 var polygonSizeInput = document.getElementById('polygonSize');
 var iterationsInput = document.getElementById('iterations');
 var radiusInput = document.getElementById('radiusInput');
+var orientationInput = document.getElementById('rotation')
 
 var ctx = canvas.getContext('2d');
 
@@ -98,6 +100,7 @@ var showControlPoints = 1;
 var showControlPolygon = 1;
 var showBezierCurve = 1;
 var radius = 40;
+var orientation = new Point(0, 1);
 
 var polygons = [];
 var curvePoints = [];
@@ -196,9 +199,7 @@ function polygonTransformation() {
   */
 
   var i = 0;
-  console.log(curvePoints);
-  console.log(curvePoints.length);
-  console.log(curvePoints[0].length);
+  console.log(velocity);
   setInterval(function() {
     if(i >= curvePoints[0].length) {
       return;
@@ -209,7 +210,7 @@ function polygonTransformation() {
     }
     draw();
     i+=1;
-  }, 3);
+  }, 5000/curvePoints[0].length);
   
 }
 
@@ -256,6 +257,11 @@ canvas.addEventListener('mousedown', function(){
 })
 canvas.addEventListener('mouseup', function() {
   move = 0;
+  if(polygons.length > 2) getCurvePoints(iterations);
+  draw();
+})
+canvas.addEventListener('scroll', () => {
+  console.log('oi');
 })
 drawButton.addEventListener('click', function() {
   // getCurvePoints(iterations);
@@ -291,4 +297,8 @@ iterationsInput.addEventListener('change', function(event){
 })
 radiusInput.addEventListener('change', function() {
   radius = event.target.value;
+})
+orientationInput.addEventListener('change', function() {
+  console.log(event.target.value);
+  orientation = orientation.rotateAsVector(event.target.value*2*Math.PI/100);
 })
