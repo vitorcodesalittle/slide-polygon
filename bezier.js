@@ -79,6 +79,8 @@ class Polygon {
 
  // elements
 var canvas = document.getElementById('canvas');
+canvas.width = parseFloat(window.getComputedStyle(canvas).width);
+canvas.height = parseFloat(window.getComputedStyle(canvas).height);
 var drawButton = document.getElementById('drawButton');
 var toggleControlPoints = document.getElementById('toggleControlPoints');
 var toggleControlPolygon = document.getElementById('toggleControlPolygon');
@@ -107,14 +109,19 @@ var curvePoints = [];
 var polygon = [];
 
 // Drawing on canvas:
-function drawLine(a, b, color) {
+function drawLine(a, b, color, isPolygon) {
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
   ctx.fillStyle = "#999966";
   ctx.fill();
   ctx.strokeStyle = color;
+  var temp = ctx.lineWidth; 
+  if(isPolygon) {
+    ctx.lineWidth = 2.5;
+  }
   ctx.stroke();
+  ctx.lineWidth = temp;
 }
 function drawPoint(b) {
   ctx.moveTo(b.x, b.y);
@@ -190,7 +197,7 @@ function draw() {
   }
   if(polygon.length > 0) {
     for(var j = 0; j < polygonSize; j++) {
-      drawLine(polygon[j], polygon[(j+1)%polygonSize], "#00ff99");
+      drawLine(polygon[j], polygon[(j+1)%polygonSize], "red", true);
     }
   }
 }
@@ -215,7 +222,7 @@ function polygonTransformation() {
     }
     draw();
     i+=1;
-  }, 5000/curvePoints[0].length);
+  }, (5000/velocity)/curvePoints[0].length);
   
 }
 

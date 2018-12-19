@@ -1,5 +1,13 @@
 body {
-    background-color: #282a33;
+    background-color: #474747;
+}
+
+button {
+    margin: 3px 3px 3px 3px;
+}
+
+.canvas {
+    margin: 10px 10px 10px 10px;
 }
 
 .container {
@@ -7,5 +15,45 @@ body {
 }
 
 .input {
-    background: #FFFFFF;
+    /* background: #FFFFFF; */
+}
+
+.userInput {
+    margin: 5px 5px 5px 5px;
+    padding: 3px 3px 3px 3px;
+    background-color: #aeadb1;
+}
+
+.userInput .polygonChoices {
+    margin: 10px 10px 10px 10px;
+    padding: 3px 3px 3px 3px;
+    background-color: #aeadb1;
+    color: black;
+}
+.userInput .polygonChoices h3{
+    margin: 0px 0px 0px 0px;
+    padding: 3px 3px 3px 3px;
+}
+
+.userInput .animationChoices h3{
+    margin: 0px 0px 0px 0px;
+    padding:3px 3px 3px 3px;
+}
+
+.userInput .animationChoices {
+    margin: 10px 10px 10px 10px;
+    padding: 3px 3px 3px 3px;
+    background-color: #aeadb1;
+    color: black;
+}
+
+.instructions {
+    margin: 5px 5px 5px 5px;
+    padding: 3px 3px 3px 3px;
+    background-color: #aeadb1;
+    color: black;
+}
+.instructions h3 {
+    margin: 10px 10px 0px 10px;
+    color: black;
 }
