@@ -209,10 +209,15 @@ function polygonTransformation() {
   desenhamos o polígono deslocando sobre o seg. de reta (D) entre dois pontos de uma curva, parametrizando
   o deslocamento a partir da razão len(D)/sum(len(D[0]) + ... + len(D[iterations-1])), cujo valor é obtido em O(1) durante o desenho.
   */
-
+ if(curvePoints.length == 0) {
+  return;
+}
   var i = 0;
   console.log(velocity);
   setInterval(function() {
+    if(curvePoints.length == 0) {
+      return;
+    }
     if(i >= curvePoints[0].length) {
       return;
     }
