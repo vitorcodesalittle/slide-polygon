@@ -46,9 +46,9 @@ class Polygon {
   constructor(sides, center) {
     this.center = center;
     this.sides = sides;
-    console.log(orientation);
+    // console.log(orientation);
     this.up = orientation.scalar(radius); // orientation defines the first vertex angle
-    console.log(this.up);
+    // console.log(this.up);
     this.points = [];
     this.points.push(this.center.add(this.up));
     var rotation = 2*Math.PI/this.sides;
@@ -159,6 +159,8 @@ function getCurvePoints(iterations) {
     }
   }
   var drawsInIteration = Math.ceil(700/iterations);
+  // 1000/300 = 10/3 = 3.33... = 4.
+  // curvePoints[0].length == ceil(1000/iterations)*iterations 
   for(var i = 0; i < iterations; i++) {
     for(var j = 0; j < polygonSize; j++) {
       var begin = deCasteljeu(controlPoints[j], i/iterations);
@@ -201,20 +203,16 @@ function draw() {
     }
   }
 }
-
+var id;
 function polygonTransformation() {
-  /*
-  considere 5 segundos o tempo da transf. completa do polígono
-  para suavizar a transf. com um número arbitrário de iterações (definido pelo usuário),
-  desenhamos o polígono deslocando sobre o seg. de reta (D) entre dois pontos de uma curva, parametrizando
-  o deslocamento a partir da razão len(D)/sum(len(D[0]) + ... + len(D[iterations-1])), cujo valor é obtido em O(1) durante o desenho.
-  */
- if(curvePoints.length == 0) {
-  return;
-}
+  if(curvePoints.length == 0) {
+    return;
+  }
   var i = 0;
   console.log(velocity);
-  setInterval(function() {
+  console.log(curvePoints[0].length);
+  console.log(iterations);
+  id = setInterval(function() {
     if(curvePoints.length == 0) {
       return;
     }
@@ -227,7 +225,7 @@ function polygonTransformation() {
     }
     draw();
     i+=1;
-  }, (5000/velocity)/curvePoints[0].length);
+  }, 5000/curvePoints[0].length);
   
 }
 
@@ -274,15 +272,14 @@ canvas.addEventListener('mousedown', function(){
 })
 canvas.addEventListener('mouseup', function() {
   move = 0;
-  if(polygons.length > 2) getCurvePoints(iterations);
+  if(polygons.length > 1) getCurvePoints(iterations);
   draw();
 })
-canvas.addEventListener('scroll', () => {
-  console.log('oi');
-})
+
 drawButton.addEventListener('click', function() {
-  // getCurvePoints(iterations);
-  // draw();
+  getCurvePoints(iterations);
+  showBezierCurve = 0;
+  clearInterval(id); // stops execution of previous polygon transformations ( the id is from the setInterval)
   polygonTransformation();
 })
 toggleControlPoints.addEventListener('click', function() {
@@ -302,15 +299,14 @@ clearPoints.addEventListener('click', function() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   polygons = [];
   curvePoints = [];
-})
-rangeInput.addEventListener('change', function(event) {
-  velocity = event.target.value;
+  polygon = [];
 })
 polygonSizeInput.addEventListener('change', function(event){
   polygonSize = event.target.value;
 })
 iterationsInput.addEventListener('change', function(event){
   iterations = event.target.value;
+  console.log(iterations);
 })
 radiusInput.addEventListener('change', function() {
   radius = event.target.value;
