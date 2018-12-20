@@ -212,6 +212,7 @@ function polygonTransformation() {
   console.log(velocity);
   console.log(curvePoints[0].length);
   console.log(iterations);
+  var timePerDraw = 1e4/(curvePoints[0].length*100);
   id = setInterval(function() {
     if(curvePoints.length == 0) {
       return;
@@ -225,7 +226,7 @@ function polygonTransformation() {
     }
     draw();
     i+=1;
-  }, 5000/curvePoints[0].length);
+  }, timePerDraw);
   
 }
 
@@ -279,7 +280,7 @@ canvas.addEventListener('mouseup', function() {
 drawButton.addEventListener('click', function() {
   getCurvePoints(iterations);
   showBezierCurve = 0;
-  clearInterval(id); // stops execution of previous polygon transformations ( the id is from the setInterval)
+  if(id) clearInterval(id); // stops execution of previous polygon transformations ( the id is from the setInterval)
   polygonTransformation();
 })
 toggleControlPoints.addEventListener('click', function() {
@@ -300,6 +301,7 @@ clearPoints.addEventListener('click', function() {
   polygons = [];
   curvePoints = [];
   polygon = [];
+  if(id) clearInterval(id);
 })
 polygonSizeInput.addEventListener('change', function(event){
   polygonSize = event.target.value;
